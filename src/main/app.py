@@ -26,13 +26,14 @@ from pysmartdatamodels import pysmartdatamodels as sdm
 
 genIterations = int(os.getenv("GEN-ITERATIONS", "10"))
 genDepth = int(os.getenv("GEN-DEPTH", "0"))
-depthMaxThreshold = int(os.getenv("GEN-DEPTH-MAX-THR", "0"))
+depthMaxThreshold = int(os.getenv("GEN-DEPTH-MAX-THR", "5"))
 domain = os.getenv("SDM-DOMAIN", "")
 subject = os.getenv("SDM-SUBJECT", "")
 name = os.getenv("SDM-NAME", "")
-keyvaluesEnabled = os.getenv("KEYVALUES-ENABLED", "false")
+normalizedOutEnabled = os.getenv("OUT-NORMALIZED-ENABLED", "true")
+keyvaluesOutEnabled = os.getenv("OUT-KEYVALUES-ENABLED", "false")
 
-keptProperties = set(['id', 'type'])
+retainedProperties = set(['id', 'type'])
 schemaUrl = f"https://raw.githubusercontent.com/smart-data-models/{subject}/master/{name}/schema.json"
 
 dataModels = sdm.load_all_datamodels()
@@ -134,29 +135,30 @@ if genDepth > depthMaxThreshold:
 
 
 # Generate the normalized samples
-for ii in range(genDepth):
-    logging.debug(f"Generating normalized samples excluding {ii} random properties...")
+if normalizedOutEnabled == 'True':
+    for ii in range(genDepth):
+        logging.debug(f"Generating normalized samples excluding {ii} random properties...")
 
-    for jj in range(genIterations):
-        logging.debug(f"Generating {jj}-th sample...")
+        for jj in range(genIterations):
+            logging.debug(f"Generating {jj}-th sample...")
 
-        # Generate the full sample using sdm module
-        sampleNormalized = sdm.ngsi_ld_example_generator(schemaUrl)
-        
-        # compute the list of properties to remove (all the properties that are shared with other data models in the same subject, including a batch of random unique properties and excluding those in the list of properties to keep)
-        excludedProperties = dmProperties - uniqueProperties - keptProperties | set(random.sample(list(uniqueProperties), ii))
+            # Generate the full sample using sdm module
+            sampleNormalized = sdm.ngsi_ld_example_generator(schemaUrl)
+            
+            # compute the list of properties to remove (all the properties that are shared with other data models in the same subject, including a batch of random unique properties and excluding those in the list of properties to keep)
+            excludedProperties = dmProperties - uniqueProperties - retainedProperties | set(random.sample(list(uniqueProperties), ii))
 
-        # remove the excluded properties from the full sample
-        for key in excludedProperties:
-            sampleNormalized = nested_delete(sampleNormalized, key)
+            # remove the excluded properties from the full sample
+            for key in excludedProperties:
+                sampleNormalized = nested_delete(sampleNormalized, key)
 
-        # persist the resulting sample in a file
-        with open(f"../output/{name}_normalized.json", "a") as f_norm:
-            print(json.dumps(sampleNormalized), file=f_norm)
+            # persist the resulting sample in a file
+            with open(f"../output/{name}_normalized.json", "a") as f_norm:
+                print(json.dumps(sampleNormalized), file=f_norm)
 
 
 # Generate the key-values samples
-if keyvaluesEnabled == 'True':
+if keyvaluesOutEnabled == 'True':
     for ii in range(genDepth):
         logging.debug(f"Generating key-values samples excluding {ii} random properties...")
 
@@ -167,7 +169,7 @@ if keyvaluesEnabled == 'True':
             sampleKeyValues = sdm.ngsi_ld_keyvalue_example_generator(schemaUrl)
 
             # compute the list of properties to remove (all the properties that are shared with other data models in the same subject, including a batch of random unique properties and excluding those in the list of properties to keep)
-            excludedProperties = dmProperties - uniqueProperties - keptProperties | set(random.sample(list(uniqueProperties), ii))
+            excludedProperties = dmProperties - uniqueProperties - retainedProperties | set(random.sample(list(uniqueProperties), ii))
 
             # remove the excluded properties from the full sample
             for key in excludedProperties:
