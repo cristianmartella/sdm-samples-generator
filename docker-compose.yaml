@@ -1,0 +1,10 @@
+services:
+  app:
+    image: sdmgen:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./src/resources/output:/output
+    env_file:
+      - .conf.env
