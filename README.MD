@@ -1,6 +1,7 @@
 # Smart Data Models entity samples generator
 
-![Version: 0.1.0](https://img.shields.io/badge/Version-0.1.0-informational)
+![Version: 0.1.1](https://img.shields.io/badge/Version-0.1.1-informational)
+[![Python 3.13](https://img.shields.io/badge/python-3.13-blue.svg)](https://www.python.org/downloads/release/python-3130/)
 
 This tool aims to streamline the generation of random NGSI-LD entity samples to be used in the training and distillation of Small Language Models (SLMs) models.
 
@@ -13,6 +14,21 @@ This tool aims to streamline the generation of random NGSI-LD entity samples to 
 ## Source Code
 
 * <https://github.com/cristianmartella/sdm-samples-generator>
+
+## Table of Contents
+
+- [Smart Data Models entity samples generator](#smart-data-models-entity-samples-generator)
+  - [Maintainers](#maintainers)
+  - [Source Code](#source-code)
+  - [Table of Contents](#table-of-contents)
+  - [Workflow](#workflow)
+  - [Configuration parameters: .conf.env](#configuration-parameters-confenv)
+  - [Run](#run)
+    - [Using Docker](#using-docker)
+    - [Using default shell](#using-default-shell)
+  - [Output](#output)
+  - [To-Do](#to-do)
+  - [License](#license)
 
 ## Workflow
 
@@ -36,6 +52,48 @@ The script iteratively ## Configuration parameters: .conf.envgenerates a number 
 | SDM-NAME | The name of the target SDM | string |  | PhotovoltaicMeasurement |
 | OUT-NORMALIZED-ENABLED | Enable the generation of normalized entity samples | boolean | False | True |
 | OUT-KEYVALUES-ENABLED | Enable the generation of key-values entity samples | boolean | False | True |
+
+## Run
+
+### Using Docker
+
+The script can be containerized and executed using Docker. To this end, the first step is to build the related Docker image and, subsequently, a container corresponding to that image can be run.
+
+Using `docker compose` allows to execute both such operations in one single command:
+
+```shell
+docker compose up
+```
+
+> [!Note]
+> The first execution will require additional time to build the image. Once the image is built, docker compose will skip this step and run the previously built image right away.
+> In case the image needs to be rebuilt (e.g., following a change in the code), run the above command with the option `--build` to force the rebuilding process.
+
+### Using default shell
+
+To execute the script, the required Python dependencies included in the `requirements.txt` file should be installed using the following command:
+
+```shell
+cd sdm-samples-generator
+pip install --no-cache-dir -r requirements.txt
+```
+
+Then, environment variables included in `.conf.env` file must be made available to the script:
+
+```shell
+set -a
+source .conf.env
+set +a
+```
+
+> [!NOTE]
+> Wrapping the sourcing of the *.conf.env* file with `set -a` and `set +a` ensures that the script can read the environment variables correctly and that the exported variables only exist as part of the execution of the script itself.
+
+Finally, execute the script:
+
+```shell
+python3 src/main/app.py
+```
 
 ## Output
 
