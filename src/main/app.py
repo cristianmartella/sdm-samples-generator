@@ -19,6 +19,7 @@ import logging
 import os
 import json
 import random
+import utils
 from nested_lookup import nested_delete
 from pysmartdatamodels import pysmartdatamodels as sdm
 #from ngsild_converter import normalized2keyvalues
@@ -136,6 +137,13 @@ if genDepth > depthMaxThreshold:
 
 # Generate the normalized samples
 if normalizedOutEnabled == 'True':
+    # Generate a full sample using sdm module
+    sampleNormalized = sdm.ngsi_ld_example_generator(schemaUrl)
+
+    # search unfitting properties in the sample
+    unfittingProperties = utils.match(utils.MATCHER_TYPE_SENTENCE, sampleNormalized)
+    print(f"unfittingProperties: {unfittingProperties}")
+
     for ii in range(genDepth):
         logging.debug(f"Generating normalized samples excluding {ii} random properties...")
 
@@ -152,6 +160,9 @@ if normalizedOutEnabled == 'True':
             for key in excludedProperties:
                 sampleNormalized = nested_delete(sampleNormalized, key)
 
+            # cleanup unfitting properties
+            sampleNormalized = utils.clear_properties(sampleNormalized, unfittingProperties)
+
             # persist the resulting sample in a file
             with open(f"../output/{name}_normalized.json", "a") as f_norm:
                 print(json.dumps(sampleNormalized), file=f_norm)
@@ -159,6 +170,13 @@ if normalizedOutEnabled == 'True':
 
 # Generate the key-values samples
 if keyvaluesOutEnabled == 'True':
+    # Generate a full sample using sdm module
+    sampleKeyValues = sdm.ngsi_ld_example_generator(schemaUrl)
+
+    # search unfitting properties in the sample
+    unfittingProperties = utils.match(utils.MATCHER_TYPE_SENTENCE, sampleKeyValues)
+    print(f"unfittingProperties: {unfittingProperties}")
+
     for ii in range(genDepth):
         logging.debug(f"Generating key-values samples excluding {ii} random properties...")
 
@@ -174,6 +192,9 @@ if keyvaluesOutEnabled == 'True':
             # remove the excluded properties from the full sample
             for key in excludedProperties:
                 sampleKeyValues = nested_delete(sampleKeyValues, key)
+
+            # cleanup unfitting properties
+            sampleKeyValues = utils.clear_properties(sampleKeyValues, unfittingProperties)
 
             # persist the resulting sample in a file
             with open(f"../output/{name}_keyvalues.json", "a") as f_kv:

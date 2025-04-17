@@ -1,6 +1,6 @@
 # Smart Data Models entity samples generator
 
-![Version: 0.1.1](https://img.shields.io/badge/Version-0.1.1-informational)
+![Version: 0.2.0](https://img.shields.io/badge/Version-0.2.0-informational)
 [![Python 3.13](https://img.shields.io/badge/python-3.13-blue.svg)](https://www.python.org/downloads/release/python-3130/)
 
 This tool aims to streamline the generation of random NGSI-LD entity samples to be used in the training and distillation of Small Language Models (SLMs) models.
@@ -38,7 +38,9 @@ The `pysmartdatamodels` Python library includes tools to list the properties of 
 
 In particular, for a given generated data entity, the tool removes all the properties that are **shared** across all the SDMs that belong to the same subject. It is possible to further refine the resulting entity by preserving a custom set of **retained properties**. This process is performed recursively, ensuring that even nested properties are taken into account.
 
-The script iteratively ## Configuration parameters: .conf.envgenerates a number of entities that is given by the product of the number of *iterations* and the value of the *depth* parameter. For each iteration up to the value of **depth** parameter, a batch of entities (whose size is specified by the **iterations** parameter) is further refined by removing an additional set of randomly picked unique properties. The size of this set corresponds to the current iteration index.
+The script iteratively ## Configuration parameters: .conf.env generates a number of entities that is given by the product of the number of *iterations* and the value of the *depth* parameter. For each iteration up to the value of **depth** parameter, a batch of entities (whose size is specified by the **iterations** parameter) is further refined by removing an additional set of randomly picked unique properties. The size of this set corresponds to the current iteration index.
+
+Some of the fields included in the samples generated with `pysmartdatamodels` contain gibberish text that could be troublesome for AI training. Hence, it is important to recognize such values and update them. From version 0.2.0 such properties are automatically identified via regex and cleared.
 
 ## Configuration parameters: .conf.env
 
@@ -109,9 +111,9 @@ The entities included in these collections are separated by new lines.
 
 ## To-Do
 
-* [ ] Cleanup results:
+* [x] Cleanup results:
   * [ ] Clear strings of known faulty properties
-  * [ ] Using regex: remove strings that have at least one space, exluding those that begin with a number followed by a dash (e.g. "02-Loss of communication")
+  * [x] Using regex: remove strings that have at least one space, exluding those that begin with a number followed by a dash (e.g. "02-Loss of communication")
   * [ ] Update string properties with actual random samples (e.g. actual random addresses, names, etc., based on policies)
 
 * [ ] Implement web-service with REST API for external configuration of the parameters
