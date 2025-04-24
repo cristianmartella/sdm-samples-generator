@@ -1,6 +1,6 @@
 # Smart Data Models entity samples generator
 
-![Version: 0.2.0](https://img.shields.io/badge/Version-0.2.0-informational)
+![Version: 0.3.1](https://img.shields.io/badge/Version-0.3.1-informational)
 [![Python 3.13](https://img.shields.io/badge/python-3.13-blue.svg)](https://www.python.org/downloads/release/python-3130/)
 
 This tool aims to streamline the generation of random NGSI-LD entity samples to be used in the training and distillation of Small Language Models (SLMs) models.

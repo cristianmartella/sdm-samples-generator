@@ -22,7 +22,9 @@ import random
 import utils
 from nested_lookup import nested_delete
 from pysmartdatamodels import pysmartdatamodels as sdm
-#from ngsild_converter import normalized2keyvalues
+
+GEN_NORMALIZED = "normalized"
+GEN_KEYVALUES = "keyvalues"
 
 
 genIterations = int(os.getenv("GEN-ITERATIONS", "10"))
@@ -117,6 +119,66 @@ def get_shared_properties_by_domain(domain:str, excludedSubjects:list) -> set:
 
 
 
+def generate_samples(generator:str, schemaUrl:str, depth:int, iterations:int, synonymsBatchRatio:float, enableSnakeCase:bool):
+    """
+    Generate samples for the given data model.
+    :param generator: The generator type (normalized or keyvalues).
+    :param schemaUrl: The schema URL.
+    :param depth: The depth of the generated samples.
+    :param iterations: The number of iterations.
+    :param synonymsBatchRatio: The ratio of synonyms to use.
+    :param enableSnakeCase: Whether to enable snake case.
+    :return: file(s) containing generated samples.
+    """
+
+    # Generate a full sample using sdm module
+    if generator == GEN_NORMALIZED:
+        samples = sdm.ngsi_ld_example_generator(schemaUrl)
+    elif generator == GEN_KEYVALUES:
+        samples = sdm.ngsi_ld_keyvalue_example_generator(schemaUrl)
+
+    # search unfitting properties in the sample
+    unfittingProperties = utils.match(utils.MATCHER_TYPE_SENTENCE, samples)
+    print(f"unfittingProperties: {unfittingProperties}")
+
+    for ii in range(depth):
+        logging.debug(f"Generating normalized samples excluding {ii} random properties...")
+
+        for jj in range(iterations):
+            logging.debug(f"Generating {jj}-th sample...")
+
+            # Generate the full sample using sdm module
+            samples = sdm.ngsi_ld_example_generator(schemaUrl)
+            
+            # compute the list of properties to remove (all the properties that are shared with other data models in the same subject, including a batch of random unique properties and excluding those in the list of properties to keep)
+            excludedProperties = dmProperties - uniqueProperties - retainedProperties | set(random.sample(list(uniqueProperties), ii))
+
+            # remove the excluded properties from the full sample
+            for key in excludedProperties:
+                samples = nested_delete(samples, key)
+
+            # cleanup unfitting properties
+            samples = utils.clear_properties(samples, unfittingProperties)
+
+            # replace batch of properties with random synonyms
+            if synBatchRatio > 0:
+                # compute the number of properties to replace
+                numPropertiesToReplace = int(len(samples.keys()) * synBatchRatio)
+                # get a batch of random properties to replace (excluding the retained properties)
+                propertiesToReplace = set(random.sample(list(set(samples.keys() - retainedProperties)), numPropertiesToReplace))
+                # replace the properties with random synonyms
+                for key in propertiesToReplace:
+                    samples[utils.randomize_camel_word(key)] = samples.pop(key)
+            
+
+            # convert the properties to snake case if enabled
+            if enableSnakeCase == 'True':
+                samples = utils.dict_to_snake_keys(samples)
+
+            # persist the resulting sample in a file
+            with open(f"../output/{name}_{generator}.json", "a") as f_norm:
+                print(json.dumps(samples), file=f_norm)
+
 
 
 # Get the list of shared properties for the given subject
@@ -136,103 +198,9 @@ logging.debug(f"uniqueProperties: {uniqueProperties}")
 if genDepth > depthMaxThreshold:
     genDepth = depthMaxThreshold
 
-
 # Generate the normalized samples
 if normalizedOutEnabled == 'True':
-    # Generate a full sample using sdm module
-    sampleNormalized = sdm.ngsi_ld_example_generator(schemaUrl)
-
-    # search unfitting properties in the sample
-    unfittingProperties = utils.match(utils.MATCHER_TYPE_SENTENCE, sampleNormalized)
-    print(f"unfittingProperties: {unfittingProperties}")
-
-    for ii in range(genDepth):
-        logging.debug(f"Generating normalized samples excluding {ii} random properties...")
-
-        for jj in range(genIterations):
-            logging.debug(f"Generating {jj}-th sample...")
-
-            # Generate the full sample using sdm module
-            sampleNormalized = sdm.ngsi_ld_example_generator(schemaUrl)
-            
-            # compute the list of properties to remove (all the properties that are shared with other data models in the same subject, including a batch of random unique properties and excluding those in the list of properties to keep)
-            excludedProperties = dmProperties - uniqueProperties - retainedProperties | set(random.sample(list(uniqueProperties), ii))
-
-            # remove the excluded properties from the full sample
-            for key in excludedProperties:
-                sampleNormalized = nested_delete(sampleNormalized, key)
-
-            # cleanup unfitting properties
-            sampleNormalized = utils.clear_properties(sampleNormalized, unfittingProperties)
-
-            # replace batch of properties with random synonyms
-            if synBatchRatio > 0:
-                # compute the number of properties to replace
-                numPropertiesToReplace = int(len(sampleNormalized.keys()) * synBatchRatio)
-                # get a batch of random properties to replace (excluding the retained properties)
-                propertiesToReplace = set(random.sample(list(set(sampleNormalized.keys() - retainedProperties)), numPropertiesToReplace))
-                # replace the properties with random synonyms
-                for key in propertiesToReplace:
-                    sampleNormalized[utils.randomize_camel_word(key)] = sampleNormalized.pop(key)
-            
-
-            # convert the properties to snake case if enabled
-            if enableSnakeCase == 'True':
-                sampleNormalized = utils.dict_to_snake_keys(sampleNormalized)
-
-            print(f"updated sampleNormalized: {sampleNormalized}")
-
-            # persist the resulting sample in a file
-            with open(f"../output/{name}_normalized.json", "a") as f_norm:
-                print(json.dumps(sampleNormalized), file=f_norm)
-
-
+    generate_samples(GEN_NORMALIZED, schemaUrl, genDepth, genIterations, synBatchRatio, enableSnakeCase)
 # Generate the key-values samples
 if keyvaluesOutEnabled == 'True':
-    # Generate a full sample using sdm module
-    sampleKeyValues = sdm.ngsi_ld_example_generator(schemaUrl)
-
-    # search unfitting properties in the sample
-    unfittingProperties = utils.match(utils.MATCHER_TYPE_SENTENCE, sampleKeyValues)
-    print(f"unfittingProperties: {unfittingProperties}")
-
-    for ii in range(genDepth):
-        logging.debug(f"Generating key-values samples excluding {ii} random properties...")
-
-        for jj in range(genIterations):
-            logging.debug(f"Generating {jj}-th sample...")
-            
-            # Generate the full sample using sdm module
-            sampleKeyValues = sdm.ngsi_ld_keyvalue_example_generator(schemaUrl)
-
-            # compute the list of properties to remove (all the properties that are shared with other data models in the same subject, including a batch of random unique properties and excluding those in the list of properties to keep)
-            excludedProperties = dmProperties - uniqueProperties - retainedProperties | set(random.sample(list(uniqueProperties), ii))
-
-            # replace batch of properties with random synonyms
-            if synBatchRatio > 0:
-                # compute the number of properties to replace
-                numPropertiesToReplace = int(len(sampleKeyValues.keys()) * synBatchRatio)
-                # get a batch of random properties to replace (excluding the retained properties)
-                propertiesToReplace = set(random.sample(list(set(sampleKeyValues.keys() - retainedProperties)), numPropertiesToReplace))
-                # replace the properties with random synonyms
-                for key in propertiesToReplace:
-                    sampleKeyValues[utils.randomize_camel_word(key)] = sampleKeyValues.pop(key)
-
-            # remove the excluded properties from the full sample
-            for key in excludedProperties:
-                sampleKeyValues = nested_delete(sampleKeyValues, key)
-
-            # cleanup unfitting properties
-            sampleKeyValues = utils.clear_properties(sampleKeyValues, unfittingProperties)
-
-            # convert the properties to snake case if enabled
-            if enableSnakeCase == 'True':
-                sampleKeyValues = utils.dict_to_snake_keys(sampleKeyValues)
-
-            # persist the resulting sample in a file
-            with open(f"../output/{name}_keyvalues.json", "a") as f_kv:
-                print(json.dumps(sampleKeyValues), file=f_kv)
-
-
-word = "predictedEnergyOutput"
-print(f"random synonym of {word}: {utils.randomize_camel_word(word)}")
+    generate_samples(GEN_KEYVALUES, schemaUrl, genDepth, genIterations, synBatchRatio, enableSnakeCase)
