@@ -1,4 +1,5 @@
 from functools import reduce
+import logging
 import operator
 import re
 import random
@@ -133,17 +134,15 @@ def get_random_synonym(word:str) -> str:
 
     synonyms_synsets_filtered = [synset for synset in synonyms_synsets if synset.path_similarity(word_synset) > sim_threshold]
 
-    #print(f"word: {word}")
-    # print(f"synonyms_synsets: {synonyms_synsets}")
-    # print(f"synonyms_synsets_filtered: {synonyms_synsets_filtered}")
+    logging.debug(f"word: {word}")
+    logging.debug(f"synonyms_synsets: {synonyms_synsets}")
+    logging.debug(f"synonyms_synsets_filtered: {synonyms_synsets_filtered}")
 
     if len(synonyms_synsets_filtered) > 0:
         for syn in synonyms_synsets_filtered:
             syn_name = syn.lemmas()[0].name()
-            #print(f"syn name: {syn_name}")
             synonyms.add(''.join(syn_name))
 
-        #print(f"synonyms: {synonyms}")
         # Return a random synonym
         return random.choice(list(synonyms))
     else:

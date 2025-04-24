@@ -139,7 +139,7 @@ def generate_samples(generator:str, schemaUrl:str, depth:int, iterations:int, sy
 
     # search unfitting properties in the sample
     unfittingProperties = utils.match(utils.MATCHER_TYPE_SENTENCE, samples)
-    print(f"unfittingProperties: {unfittingProperties}")
+    logging.debug(f"unfittingProperties: {unfittingProperties}")
 
     for ii in range(depth):
         logging.debug(f"Generating normalized samples excluding {ii} random properties...")
