@@ -133,7 +133,7 @@ def get_random_synonym(word:str) -> str:
 
     synonyms_synsets_filtered = [synset for synset in synonyms_synsets if synset.path_similarity(word_synset) > sim_threshold]
 
-    print(f"word: {word}")
+    #print(f"word: {word}")
     # print(f"synonyms_synsets: {synonyms_synsets}")
     # print(f"synonyms_synsets_filtered: {synonyms_synsets_filtered}")
 
@@ -143,7 +143,7 @@ def get_random_synonym(word:str) -> str:
             #print(f"syn name: {syn_name}")
             synonyms.add(''.join(syn_name))
 
-        print(f"synonyms: {synonyms}")
+        #print(f"synonyms: {synonyms}")
         # Return a random synonym
         return random.choice(list(synonyms))
     else:
