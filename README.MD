@@ -42,6 +42,8 @@ The script iteratively ## Configuration parameters: .conf.env generates a number
 
 Some of the fields included in the samples generated with `pysmartdatamodels` contain gibberish text that could be troublesome for AI training. Hence, it is important to recognize such values and update them. From version 0.2.0 such properties are automatically identified via regex and cleared.
 
+The tools also allows to replace a subset of the original properties using pseudo-generated synonyms. Moreover it allows to adopt snake case format for generated samples properties.
+
 ## Configuration parameters: .conf.env
 
 | **Parameter** | **Description** | **Type** | **Default** | **Example** |
@@ -49,6 +51,8 @@ Some of the fields included in the samples generated with `pysmartdatamodels` co
 | GEN-ITERATIONS | Size of generated entities set for each depth step | integer | 10 | 5 |
 | GEN-DEPTH | Number of depth iterations (the deeper, the more random unique properties will be removed from the corresponding batches of generated entities) | integer | 0 | 3 |
 | GEN-DEPTH-MAX-THR | Maximum depth threshold: depth is capped to this value if above this value | integer | 5 | 7 |
+| SYN-BATCH-RATIO | Share of properties to replace with randomized synonyms | decimal between [0.0-1.0] | 0.0 | 0.3 |
+| ENABLE-SNAKE-CASE | Enables the generation of entities with properties formatted in snake case (the default is camel case) | boolean | False | True |
 | SDM-DOMAIN | The domain of the target SDM | string |  | SmartEnergy |
 | SDM-SUBJECT | The subject of the target SDM | string |  | dataModel.GreenEnergy |
 | SDM-NAME | The name of the target SDM | string |  | PhotovoltaicMeasurement |
@@ -112,10 +116,25 @@ The entities included in these collections are separated by new lines.
 ## To-Do
 
 * [x] Cleanup results:
-  * [ ] Clear strings of known faulty properties
+  * [x] Clear strings of known faulty properties
   * [x] Using regex: remove strings that have at least one space, exluding those that begin with a number followed by a dash (e.g. "02-Loss of communication")
   * [ ] Update string properties with actual random samples (e.g. actual random addresses, names, etc., based on policies)
+* [ ] Replace subsets of property names with random synonyms
+  * [x] Add batch ratio parameter to define the size of the batch of properties to be modified
+  * [x] Generate a list of synonyms for each given property and pick one randomly
+  * [ ] Consider acronyms (synonyms may not be generated for acronyms)
+* [x] Allow the generation of entities with snake case properties
+* [ ] Store original cleansed versions of the randomized entities in a json document structured as follows:
 
+  ```json
+  {
+    "originalSample": <original sample json>,
+    "randomizedSample": <randomized sample json>,
+    "omittedProperties": [<omitted properties paths list>]
+  }
+  ```
+
+* [ ] Allow CBOR encoding
 * [ ] Implement web-service with REST API for external configuration of the parameters
 
 ## License

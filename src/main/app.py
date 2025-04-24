@@ -28,13 +28,15 @@ from pysmartdatamodels import pysmartdatamodels as sdm
 genIterations = int(os.getenv("GEN-ITERATIONS", "10"))
 genDepth = int(os.getenv("GEN-DEPTH", "0"))
 depthMaxThreshold = int(os.getenv("GEN-DEPTH-MAX-THR", "5"))
+synBatchRatio = float(os.getenv("SYN-BATCH-RATIO", "0.0"))
+enableSnakeCase = os.getenv("ENABLE-SNAKE-CASE", "False")
 domain = os.getenv("SDM-DOMAIN", "")
 subject = os.getenv("SDM-SUBJECT", "")
 name = os.getenv("SDM-NAME", "")
-normalizedOutEnabled = os.getenv("OUT-NORMALIZED-ENABLED", "true")
-keyvaluesOutEnabled = os.getenv("OUT-KEYVALUES-ENABLED", "false")
+normalizedOutEnabled = os.getenv("OUT-NORMALIZED-ENABLED", "True")
+keyvaluesOutEnabled = os.getenv("OUT-KEYVALUES-ENABLED", "False")
 
-retainedProperties = set(['id', 'type'])
+retainedProperties = set(['id', 'type', '@context'])
 schemaUrl = f"https://raw.githubusercontent.com/smart-data-models/{subject}/master/{name}/schema.json"
 
 dataModels = sdm.load_all_datamodels()
@@ -163,6 +165,23 @@ if normalizedOutEnabled == 'True':
             # cleanup unfitting properties
             sampleNormalized = utils.clear_properties(sampleNormalized, unfittingProperties)
 
+            # replace batch of properties with random synonyms
+            if synBatchRatio > 0:
+                # compute the number of properties to replace
+                numPropertiesToReplace = int(len(sampleNormalized.keys()) * synBatchRatio)
+                # get a batch of random properties to replace (excluding the retained properties)
+                propertiesToReplace = set(random.sample(list(set(sampleNormalized.keys() - retainedProperties)), numPropertiesToReplace))
+                # replace the properties with random synonyms
+                for key in propertiesToReplace:
+                    sampleNormalized[utils.randomize_camel_word(key)] = sampleNormalized.pop(key)
+            
+
+            # convert the properties to snake case if enabled
+            if enableSnakeCase == 'True':
+                sampleNormalized = utils.dict_to_snake_keys(sampleNormalized)
+
+            print(f"updated sampleNormalized: {sampleNormalized}")
+
             # persist the resulting sample in a file
             with open(f"../output/{name}_normalized.json", "a") as f_norm:
                 print(json.dumps(sampleNormalized), file=f_norm)
@@ -189,6 +208,16 @@ if keyvaluesOutEnabled == 'True':
             # compute the list of properties to remove (all the properties that are shared with other data models in the same subject, including a batch of random unique properties and excluding those in the list of properties to keep)
             excludedProperties = dmProperties - uniqueProperties - retainedProperties | set(random.sample(list(uniqueProperties), ii))
 
+            # replace batch of properties with random synonyms
+            if synBatchRatio > 0:
+                # compute the number of properties to replace
+                numPropertiesToReplace = int(len(sampleKeyValues.keys()) * synBatchRatio)
+                # get a batch of random properties to replace (excluding the retained properties)
+                propertiesToReplace = set(random.sample(list(set(sampleKeyValues.keys() - retainedProperties)), numPropertiesToReplace))
+                # replace the properties with random synonyms
+                for key in propertiesToReplace:
+                    sampleKeyValues[utils.randomize_camel_word(key)] = sampleKeyValues.pop(key)
+
             # remove the excluded properties from the full sample
             for key in excludedProperties:
                 sampleKeyValues = nested_delete(sampleKeyValues, key)
@@ -196,8 +225,14 @@ if keyvaluesOutEnabled == 'True':
             # cleanup unfitting properties
             sampleKeyValues = utils.clear_properties(sampleKeyValues, unfittingProperties)
 
+            # convert the properties to snake case if enabled
+            if enableSnakeCase == 'True':
+                sampleKeyValues = utils.dict_to_snake_keys(sampleKeyValues)
+
             # persist the resulting sample in a file
             with open(f"../output/{name}_keyvalues.json", "a") as f_kv:
                 print(json.dumps(sampleKeyValues), file=f_kv)
 
 
+word = "predictedEnergyOutput"
+print(f"random synonym of {word}: {utils.randomize_camel_word(word)}")
