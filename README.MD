@@ -17,7 +17,6 @@ This tool aims to streamline the generation of random NGSI-LD entity samples to 
     - [Using Docker](#using-docker)
     - [Using default shell](#using-default-shell)
   - [Output](#output)
-  - [To-Do](#to-do)
   - [License](#license)
 
 </details>
@@ -124,31 +123,6 @@ Each entity is structured as reported in the following table.
 | unfittingProperties | The properties whose values have been removed from the original sample (reason: gibberish) |
 | modifiedProperties | The original property names that have been modified from the original sample (reason: synonyms) |
 | sdmMetadata | The metadata of the generated sample |
-
-## To-Do
-
-- [x] Cleanup results:
-  - [x] Clear strings of known faulty properties
-  - [x] Using regex: remove strings that have at least one space, exluding those that begin with a number followed by a dash (e.g. "02-Loss of communication")
-  - [ ] Update string properties with actual random samples (e.g. actual random addresses, names, etc., based on policies)
-- [ ] Replace subsets of property names with random synonyms
-  - [x] Add batch ratio parameter to define the size of the batch of properties to be modified
-  - [x] Generate a list of synonyms for each given property and pick one randomly
-  - [ ] Consider acronyms (synonyms may not be generated for acronyms)
-- [x] Allow the generation of entities with snake case properties
-- [x] Store original cleansed versions of the modified entities in a json document structured as follows:
-
-  ```json
-  {
-    "modidfiedSample": <modified sample json>,
-    "originalSample": <original sample json>,
-    "excludedProperties": [<omitted properties paths list>],
-    ...
-  }
-  ```
-
-- [ ] Allow CBOR encoding
-- [ ] Implement web-service with REST API for external configuration of the parameters
 
 ## License
 
