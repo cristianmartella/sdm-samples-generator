@@ -110,7 +110,11 @@ def clear_properties(data:dict, propertyPaths:list) -> dict:
             recursive_get(data, keys[:-1])[keys[-1]] = ""
         except TypeError as e:
             # Key-value format
-            recursive_get(data, keys[:-2])[keys[-2]] = ""
+            try:
+                recursive_get(data, keys[:-2])[keys[-2]] = ""
+            except TypeError as e:
+                print(f"TypeError: {e}")
+                pass
         except KeyError as e:
             pass
         

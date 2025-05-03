@@ -1,6 +1,6 @@
 # Smart Data Models entity samples generator
 
-![Version: 0.3.2](https://img.shields.io/badge/Version-0.3.2-informational)
+![Version: 0.4.0](https://img.shields.io/badge/Version-0.4.0-informational)
 [![Python 3.13](https://img.shields.io/badge/python-3.13-blue.svg)](https://www.python.org/downloads/release/python-3130/)
 
 This tool aims to streamline the generation of random NGSI-LD entity samples to be used in the training and distillation of Small Language Models (SLMs) models.
@@ -57,6 +57,7 @@ The tools also allows to replace a subset of the original properties using pseud
 | SDM-DOMAIN | The domain of the target SDM | string |  | SmartEnergy |
 | SDM-SUBJECT | The subject of the target SDM | string |  | dataModel.GreenEnergy |
 | SDM-NAME | The name of the target SDM | string |  | PhotovoltaicMeasurement |
+| RANDOM-NEGATIVE-SUBJECT | Enable the generation of negative samples in other subjects (performance intensive!) | boolean | False | True
 | OUT-NORMALIZED-ENABLED | Enable the generation of normalized entity samples | boolean | False | True |
 | OUT-KEYVALUES-ENABLED | Enable the generation of key-values entity samples | boolean | False | True |
 
@@ -117,12 +118,19 @@ Each entity is structured as reported in the following table.
 
 | **Property** | **Description** |
 | --- | --- |
-| modifiedSample | The sample that includes changes in the property names and case format |
-| originalSample | The corresponding unmodified sample, corresponding to the original format and property naming system of the target SDM |
-| excludedProperties | The properties that have been excluded from the original sample (reason: ambiguity) |
+| target | The target positive sample, corresponding to the original format and property naming system of the target SDM |
+| positive | A positively matching sample that includes changes in the property names and case format |
+| negative | A negatively matching sample that includes changes in the property names and case format |
+
+Furthermore, both `positive` and `negative` sample provide additional properties, as listed in the table below.
+
+| **Property** | **Description** |
+| --- | --- |
 | unfittingProperties | The properties whose values have been removed from the original sample (reason: gibberish) |
+| excludedProperties | The properties that have been excluded from the original sample (reason: ambiguity) |
 | modifiedProperties | The original property names that have been modified from the original sample (reason: synonyms) |
-| sdmMetadata | The metadata of the generated sample |
+| label | The match label (0...1): high score (e.g., 0.9) indicates a good match between the sample and the target entity, whereas a low score (e.g., 0.1) indicates a poor match |
+| sdmMetadata | The metadata of the generated sample entity |
 
 ## License
 
