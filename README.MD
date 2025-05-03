@@ -57,9 +57,12 @@ The tools also allows to replace a subset of the original properties using pseud
 | SDM-DOMAIN | The domain of the target SDM | string |  | SmartEnergy |
 | SDM-SUBJECT | The subject of the target SDM | string |  | dataModel.GreenEnergy |
 | SDM-NAME | The name of the target SDM | string |  | PhotovoltaicMeasurement |
-| RANDOM-NEGATIVE-SUBJECT | Enable the generation of negative samples in other subjects (performance intensive!) | boolean | False | True
+| RANDOM-NEGATIVE-SUBJECT | Enable the generation of negative samples in other subjects (*see warning below) | boolean | False | True
 | OUT-NORMALIZED-ENABLED | Enable the generation of normalized entity samples | boolean | False | True |
 | OUT-KEYVALUES-ENABLED | Enable the generation of key-values entity samples | boolean | False | True |
+
+> [!Warning]
+> Enabling `RANDOM-NEGATIVE-SUBJECT` triggers resource intensive logic that will dramatically impact the generation rate of samples.
 
 ## Run
 
