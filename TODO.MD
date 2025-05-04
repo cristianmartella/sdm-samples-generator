@@ -6,12 +6,11 @@
   - [ ] Update string properties with actual random samples (e.g. actual random addresses, names, etc., based on policies)  
 - [ ] Replace subsets of property names with random synonyms  
   - [ ] Consider acronyms (synonyms may not be generated for acronyms)  
-- [ ] Allow CBOR encoding  
-- [ ] Implement web API  
 
 ### In progress
 
-- [ ] Generate negative samples  
+- [ ] Allow CBOR encoding  
+- [ ] Implement web API  
 
 ### Completed ✓
 
@@ -32,3 +31,5 @@
     ...
   }
   ```  
+
+- [x] Generate negative samples  

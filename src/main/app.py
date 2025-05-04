@@ -37,11 +37,11 @@ enableSnakeCase = eval(os.getenv("ENABLE-SNAKE-CASE", "False"))
 domain = os.getenv("SDM-DOMAIN", "")
 subject = os.getenv("SDM-SUBJECT", "")
 name = os.getenv("SDM-NAME", "")
-randomNegativeSubject = eval(os.getenv("RANDOM-NEGATIVE-SUBJECT", "False"))
+retainedSharedProperties = set(os.getenv("RETAINED-SHARED-PROPERTIES", "id,type,@context").split(","))
+anyNegativeSubject = eval(os.getenv("ANY-NEGATIVE-SUBJECT", "False"))
 normalizedOutEnabled = eval(os.getenv("OUT-NORMALIZED-ENABLED", "True"))
 keyvaluesOutEnabled = eval(os.getenv("OUT-KEYVALUES-ENABLED", "False"))
 
-retainedProperties = set(['id', 'type', '@context'])
 
 dataModels = sdm.load_all_datamodels()
 
@@ -234,18 +234,18 @@ def generate_samples(generator:str, schemaUrl:str, depth:int, iterations:int, sy
             logging.debug(f"Generating {ii}-{jj}-th sample...")
             
             # compute the list of properties to remove (all the properties that are shared with other data models in the same subject, including a batch of random unique properties and excluding those in the list of properties to keep)
-            excludedProperties = sharedPropertiesBySubject - retainedProperties | set(random.sample(list(uniqueProperties), ii))
+            excludedProperties = sharedPropertiesBySubject - retainedSharedProperties | set(random.sample(list(uniqueProperties), ii))
 
             # generate positive sample
             try:
-                samplePositive = generate_sample(generator, schemaUrl, synonymsBatchRatio, enableSnakeCase, MATCH_LABEL_POSITIVE, excludedProperties, retainedProperties, unfittingProperties)
+                samplePositive = generate_sample(generator, schemaUrl, synonymsBatchRatio, enableSnakeCase, MATCH_LABEL_POSITIVE, excludedProperties, retainedSharedProperties, unfittingProperties)
                 logging.debug(f"samplePositive: {samplePositive}")
             except ValueError as ve:
                 logging.error(f"Error generating sample: {ve}")
             else:
 
                 # generate negative sample
-                if randomNegativeSubject:
+                if anyNegativeSubject:
                     negativeSubject = random.choice(list(get_subjects_by_domain(domain)))
                     sharedPropertiesByNegativeSubject = get_shared_properties_by_subject(negativeSubject)
                 else:
@@ -263,11 +263,11 @@ def generate_samples(generator:str, schemaUrl:str, depth:int, iterations:int, sy
                 negativeUniqueProperties = negativeDmProperties - sharedPropertiesByNegativeSubject
                 if(ii > len(negativeUniqueProperties)):
                     ii = len(negativeUniqueProperties)
-                negativeExcludedProperties = sharedPropertiesByNegativeSubject - retainedProperties | set(random.sample(list(negativeUniqueProperties), ii))
+                negativeExcludedProperties = sharedPropertiesByNegativeSubject - retainedSharedProperties | set(random.sample(list(negativeUniqueProperties), ii))
             
                 ## generate the negative sample
                 try:
-                    sampleNegative = generate_sample(generator, negativeUrl, synonymsBatchRatio, enableSnakeCase, MATCH_LABEL_NEGATIVE, negativeExcludedProperties, retainedProperties)
+                    sampleNegative = generate_sample(generator, negativeUrl, synonymsBatchRatio, enableSnakeCase, MATCH_LABEL_NEGATIVE, negativeExcludedProperties, retainedSharedProperties)
                     logging.debug(f"sampleNegative: {sampleNegative}")
                 except ValueError as ve:
                     logging.error(f"Error generating sample: {ve}")

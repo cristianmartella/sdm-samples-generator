@@ -1,6 +1,6 @@
 # Smart Data Models entity samples generator
 
-![Version: 0.4.0](https://img.shields.io/badge/Version-0.4.0-informational)
+![Version: 0.4.1](https://img.shields.io/badge/Version-0.4.1-informational)
 [![Python 3.13](https://img.shields.io/badge/python-3.13-blue.svg)](https://www.python.org/downloads/release/python-3130/)
 
 This tool aims to streamline the generation of random NGSI-LD entity samples to be used in the training and distillation of Small Language Models (SLMs) models.
@@ -57,12 +57,13 @@ The tools also allows to replace a subset of the original properties using pseud
 | SDM-DOMAIN | The domain of the target SDM | string |  | SmartEnergy |
 | SDM-SUBJECT | The subject of the target SDM | string |  | dataModel.GreenEnergy |
 | SDM-NAME | The name of the target SDM | string |  | PhotovoltaicMeasurement |
-| RANDOM-NEGATIVE-SUBJECT | Enable the generation of negative samples in other subjects (*see warning below) | boolean | False | True
+| RETAINED-SHARED-PROPERTIES | The list of properties shared in a subject to retain | string | id,type,@context | id,type,@context,name,description |
+| ANY-NEGATIVE-SUBJECT | Enable the generation of negative samples in other subjects (*see warning below). If disabled, only data models in the same subject will be randomly picked for the generation of negative samples | boolean | False | True |
 | OUT-NORMALIZED-ENABLED | Enable the generation of normalized entity samples | boolean | False | True |
 | OUT-KEYVALUES-ENABLED | Enable the generation of key-values entity samples | boolean | False | True |
 
 > [!Warning]
-> Enabling `RANDOM-NEGATIVE-SUBJECT` triggers resource intensive logic that will dramatically impact the generation rate of samples.
+> Enabling `ANY-NEGATIVE-SUBJECT` triggers resource intensive logic that will dramatically impact the generation rate of samples.
 
 ## Run
 
