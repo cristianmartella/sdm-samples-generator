@@ -295,7 +295,7 @@ def generate_samples(generator:str, schemaUrl:str, depth:int, iterations:int, sy
                     }
 
                     # persist the resulting sample in a file
-                    with open(f"../output/{name}_{generator}.json", "a") as f_norm:
+                    with open(f"../output/{name}_{generator}.jsonl", "a") as f_norm:
                         print(json.dumps(sample), file=f_norm)
 
             # cleanup
